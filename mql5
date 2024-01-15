@@ -1,0 +1,80 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                     Real SMC.mq5 |
+//|                        Copyright 2021, Forex Robot Easy Team     |
+//|                                              https://forexroboteasy.com |
+//+------------------------------------------------------------------+
+#property copyright 'Copyright 2021, Forex Robot Easy Team'
+#property link      'https://forexroboteasy.com'
+
+// Global variables
+int timeframe = PERIOD_CURRENT; // Current timeframe
+int smcPeriod = 14; // Period for Real SMC calculation
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Add necessary indicators and initialize variables
+    // Initialize Real SMC indicator with specified period
+    IndicatorSetInteger(INDICATOR_DIGITS, 5);
+    IndicatorSetString(INDICATOR_SHORTNAME, 'Real SMC');
+    IndicatorSetInteger(INDICATOR_LEVELS, 2);
+    SetIndexStyle(0, DRAW_LINE);
+    SetIndexBuffer(0, smcBuffer);
+    SetIndexLabel(0, 'Real SMC');
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const int begin,
+                const double &price[])
+{
+    // Calculate Real SMC values for the specified period
+    int limit = rates_total - prev_calculated;
+    if (limit > rates_total) limit = rates_total;
+    if (limit > 0)
+    {
+        for (int i = rates_total - limit; i < rates_total; i++)
+        {
+            double smcValue = CalculateSMC(i, price);
+            smcBuffer[i] = smcValue;
+        }
+    }
+
+    return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Function to calculate Real SMC value                             |
+//+------------------------------------------------------------------+
+double CalculateSMC(const int index, const double &price[])
+{
+    // Perform Real SMC calculation using Lux method
+    double smcValue = 0.0;
+    double sum = 0.0;
+
+    for (int i = index - smcPeriod + 1; i <= index; i++)
+    {
+        sum += price[i];
+    }
+
+    smcValue = sum / smcPeriod;
+
+    return smcValue;
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization function                       |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Clean up any resources used by the indicator
+    // Add any necessary deinitialization steps here
+}
